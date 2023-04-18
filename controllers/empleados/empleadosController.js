@@ -1410,7 +1410,7 @@ exports.getTotalEmpleados = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     var servicios = req.body.servicios;
    // sql2 = " SELECT hemp.idHistorial, hemp.fechaIngreso,hemp.fechaBaja, hemp.motivoBaja,hemp.puesto,hemp.idServicio, hemp.idEmpleado FROM historial_empleado AS hemp  LEFT JOIN Empleado ON Empleado.idEmpleado= hemp.idEmpleado WHERE Empleado.CURP='" + curp + "'";
-    sql = "SELECT (SELECT COUNT(*) FROM Empleado AS emp LEFT JOIN Servicio AS service ON emp.idServicio = service.idServicio  WHERE emp.status = '1' AND emp.idServicio IN("+servicios+")   order by fechaIngreso DESC) AS activos, (SELECT COUNT(*) FROM Empleado AS emp  LEFT JOIN Servicio AS service ON emp.idServicio = service.idServicio  WHERE emp.status = '0' AND emp.idServicio IN("+servicios+")   order by fechaIngreso DESC) AS bajas"
+    sql = "SELECT (SELECT COUNT(*) FROM Empleado AS emp LEFT JOIN Servicio AS service ON emp.idServicio = service.idServicio  WHERE emp.status = '1' AND emp.idServicio IN("+servicios+")   order by fechaIngreso DESC) AS activos, (SELECT COUNT(*) FROM Empleado AS emp  LEFT JOIN Servicio AS service ON emp.idServicio = service.idServicio  WHERE emp.status = '0' AND emp.idServicio IN("+servicios+")   order by fechaIngreso DESC) AS bajas,(SELECT COUNT(*) FROM registro_patronal WHERE nEstatus = 1 order by dFechaAlta DESC) as registroPatronal"
     try {
         conn.conexion().query(sql, (error, results) => {
             if (error) {

@@ -19,7 +19,7 @@ close = conexion.cerrarConexion
 exports.getRegistroPatronal = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    sql = `select ID as nID, nRegistroPatronal, date_format(dFechaAlta,"%d-%m-%Y") as dFechaAlta, nEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos from registro_patronal WHERE nEstado = 1`;
+    sql = `select ID as nID, nRegistroPatronal, date_format(dFechaAlta,"%d-%m-%Y") as dFechaAlta, sEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos, nEstatus from registro_patronal WHERE nEstatus = 1`;
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -39,7 +39,7 @@ exports.getRegistroPatronal = async (req, res, next) => {
 exports.getRegistroPatronalBaja = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    sql = `select ID as nID, nRegistroPatronal, date_format(dFechaBaja,"%d-%m-%Y") as dFechaBaja, nEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos, sMotivoBaja from registro_patronal WHERE nEstado = 2`;
+    sql = `select ID as nID, nRegistroPatronal, date_format(dFechaBaja,"%d-%m-%Y") as dFechaBaja, sEstado as sEstadoBaja, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos, sMotivoBaja from registro_patronal WHERE nEstatus = 2`;
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -61,20 +61,20 @@ exports.altaRegistroPatronal = async (req, res, next) => {
 
     const nRegistroPatronal = req.body.nRegistroPatronal;
     const dfechaAlta = req.body.dFechaAlta;
-    const nEstado = 1;
+    const sEstado = req.body.sEstado;
     const sZonaCiudad = req.body.sZonaCiudad;
     const nSalarioMinimoZPR = req.body.nSalarioMinimoZPR;
     const nPrimaRiesgo = req.body.nPrimaRiesgo;
     const nElementos = req.body.nElementos;
 
 
-    sql = "INSERT INTO registro_patronal (ID,nRegistroPatronal,dFechaAlta,nEstado,sZonaCiudad,nSalarioMinimoZRP,PrimaDeRiesgo, nElementos) VALUES(null,'"+nRegistroPatronal+"','"+dfechaAlta+"',"+nEstado+",'"+sZonaCiudad+"',"+nSalarioMinimoZPR+","+nPrimaRiesgo+","+nElementos+")";
+    sql = "INSERT INTO registro_patronal (ID,nRegistroPatronal,dFechaAlta,sEstado,sZonaCiudad,nSalarioMinimoZRP,PrimaDeRiesgo, nElementos, nEstatus) VALUES(null,'" + nRegistroPatronal + "','" + dfechaAlta + "','" + sEstado + "','" + sZonaCiudad + "'," + nSalarioMinimoZPR + "," + nPrimaRiesgo + "," + nElementos + ",1)";
 
     try {
         conn.conexion().query(sql, (error, results) => {
             if (error) {
                 res.json(error);
-            } else { 
+            } else {
                 if (results.affectedRows > 0) {
                     res.json(results);
                 }
@@ -94,13 +94,13 @@ exports.bajaRegistroPatronal = async (req, res, next) => {
     const dFechaBaja = req.body.dFechaBaja;
     const sMotivoBaja = req.body.sMotivoBaja;
 
-    sql = "UPDATE registro_patronal SET nEstado = 2, dFechaBaja = '"+dFechaBaja+"', sMotivoBaja = '"+sMotivoBaja+"' WHERE nRegistroPatronal = '"+nRegistroPatronal+"' ";
+    sql = "UPDATE registro_patronal SET nEstatus = 2, dFechaBaja = '" + dFechaBaja + "', sMotivoBaja = '" + sMotivoBaja + "' WHERE nRegistroPatronal = '" + nRegistroPatronal + "' ";
 
     try {
         conn.conexion().query(sql, (error, results) => {
             if (error) {
                 res.json(error);
-            } else { 
+            } else {
                 if (results.affectedRows > 0) {
                     res.json(results);
                 }
@@ -116,13 +116,13 @@ exports.activarRegistroPatronal = async (req, res, next) => {
 
     const nRegistroPatronal = req.body.nRegistroPatronal;
 
-    sql = "UPDATE registro_patronal SET nEstado = 1 WHERE nRegistroPatronal = '"+nRegistroPatronal+"' ";
+    sql = "UPDATE registro_patronal SET nEstatus = 1 WHERE nRegistroPatronal = '" + nRegistroPatronal + "' ";
 
     try {
         conn.conexion().query(sql, (error, results) => {
             if (error) {
                 res.json(error);
-            } else { 
+            } else {
                 if (results.affectedRows > 0) {
                     res.json(results);
                 }
@@ -138,7 +138,29 @@ exports.getRegistroPatronalxId = async (req, res, next) => {
 
     const nRegistroPatronal = req.body.nRegistroPatronal;
 
-    sql = "select ID as nID, nRegistroPatronal, date_format(dFechaAlta,'%d-%m-%Y') as dFechaAlta, nEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos from registro_patronal WHERE nRegistroPatronal  = '"+nRegistroPatronal+"'";
+    sql = "select ID as nID, nRegistroPatronal, date_format(dFechaAlta,'%Y-%m-%d') as dFechaAlta, sEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos from registro_patronal WHERE nRegistroPatronal  = '" + nRegistroPatronal + "'";
+
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                res.json(error);
+            } else {
+                res.json(results);
+            }
+
+        });
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+exports.getRegistroPatronalxIdBaja = async (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+
+    const nRegistroPatronal = req.body.nRegistroPatronal;
+
+    sql = "select ID as nID, nRegistroPatronal, date_format(dFechaBaja,'%Y-%m-%d') as dFechaBaja, sEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos,sMotivoBaja from registro_patronal WHERE nRegistroPatronal  = '" + nRegistroPatronal + "'";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -160,18 +182,20 @@ exports.editarRegistroPatronal = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     const nID = req.body.nID;
     const nRegistroPatronal = req.body.nRegistroPatronal;
-    const sZonaCiudad =  req.body.sZonaCiudad;
-    const nSalarioMinimoZRP =  req.body.nSalarioMinimoZRP;
+    const dFechaAlta = req.body.dFechaAlta;
+    const selectEstado = req.body.selectEstado;
+    const sZonaCiudad = req.body.sZonaCiudad;
+    const nSalarioMinimoZRP = req.body.nSalarioMinimoZRP;
     const PrimaDeRiesgo = req.body.PrimaDeRiesgo;
     const nElementos = req.body.nElementos;
 
-    sql = "UPDATE registro_patronal SET nRegistroPatronal = '"+nRegistroPatronal+"', sZonaCiudad = '"+sZonaCiudad+"', nSalarioMinimoZRP = "+nSalarioMinimoZRP+", PrimaDeRiesgo = "+PrimaDeRiesgo+", nElementos = "+nElementos+" WHERE ID = '"+nID+"' ";
+    sql = "UPDATE registro_patronal SET nRegistroPatronal = '" + nRegistroPatronal + "',dFechaAlta = '"+dFechaAlta+"' ,sEstado = '"+selectEstado+"' ,sZonaCiudad = '" + sZonaCiudad + "', nSalarioMinimoZRP = " + nSalarioMinimoZRP + ", PrimaDeRiesgo = " + PrimaDeRiesgo + ", nElementos = " + nElementos + " WHERE ID = '" + nID + "' ";
 
     try {
         conn.conexion().query(sql, (error, results) => {
             if (error) {
                 res.json(error);
-            } else { 
+            } else {
                 if (results.affectedRows > 0) {
                     res.json(results);
                 }
@@ -186,7 +210,7 @@ exports.validarNRegistroPatronal = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     const nRegistroPatronal = req.body.nRegistroPatronal;
 
-    sql = "select nRegistroPatronal from registro_patronal WHERE nRegistroPatronal = '"+nRegistroPatronal+"'";
+    sql = "select nRegistroPatronal from registro_patronal WHERE nRegistroPatronal = '" + nRegistroPatronal + "'";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -202,5 +226,108 @@ exports.validarNRegistroPatronal = async (req, res, next) => {
         console.log(error)
     }
 }
+
+exports.getServicios = async (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    const selectServicios = req.body.selectServicios;
+
+    sql = "select idServicio, nombre, contrato,estado as estadoServicio from servicio WHERE idServicio IN(" + selectServicios + ")";
+
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                res.json(error);
+            } else {
+                res.json(results);
+            }
+
+        });
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+exports.getServiciosPrincipal = async (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+
+    sql = "select idServicio, nombre from servicio";
+
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                res.json(error);
+            } else {
+                res.json(results);
+            }
+
+        });
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+exports.asignarServicios = async (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+
+    let nRegistroPatronal = req.body.nRegistroPatronal;
+    let serviciosAsignados = req.body.serviciosAsignados;
+
+    sql = "UPDATE registro_patronal SET ServiciosAsignados ='" + serviciosAsignados + "' WHERE nRegistroPatronal  ='" + nRegistroPatronal + "'";
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                res.json(error);
+            } else {
+                console.log(results)
+                res.json(results)
+            }
+        });
+        //cerrar
+
+    } catch (error) {
+        console.log(error)
+
+    }
+}
+
+exports.serviciosxId = async (req, res, next) => {
+    var nRegistroPatronal = req.body.nRegistroPatronal;
+
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    //sql = "select count(*) as 'total' from Usuario where email='" + usuario + "' and hashed_password='" + password + "'";
+    sql = "SELECT ServiciosAsignados from registro_patronal WHERE nRegistroPatronal  = '" + nRegistroPatronal + "'";
+
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                //QUEPASO MAMA
+
+                res.json('Quepashomama');
+                //                res.json(error);
+            } else {
+                // res.json(results);
+                //res.json(results[0].hashed_password);
+                conn.conexion().query(sql, (errorCons, resultados) => {
+                    if (errorCons) {
+                        res.json(errorCons);
+                    } else {
+                        res.json(resultados)
+                    }
+
+
+
+                });
+            }
+
+        });
+    } catch (err) {
+        console.log(error)
+        //
+
+    }
+}
+
 
 
