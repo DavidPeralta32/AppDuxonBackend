@@ -31,6 +31,11 @@ app.use(bodyParser.json());
 app.use('/general', require('../Servidor Pruebas/routes/general'));
 app.use('/empleados', require('../Servidor Pruebas/routes/empleados'));
 app.use('/contabilidad',require('../Servidor Pruebas/routes/contabilidad'));
+app.use('/departamentos',require('../Servidor Pruebas/routes/departamentos'));
+app.use('/puestos',require('../Servidor Pruebas/routes/puestos'));
+
+
+
 
 //End point empleados
 
