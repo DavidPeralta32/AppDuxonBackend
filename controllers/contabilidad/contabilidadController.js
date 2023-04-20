@@ -19,7 +19,7 @@ close = conexion.cerrarConexion
 exports.getRegistroPatronal = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    sql = `select ID as nID, nRegistroPatronal, date_format(dFechaAlta,"%d-%m-%Y") as dFechaAlta, sEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos, nEstatus from registro_patronal WHERE nEstatus = 1`;
+    sql = "SELECT regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaAlta,'%d-%m-%Y') as dFechaAlta, regp.sEstado, regp.sZonaCiudad,regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, COUNT(emp.idEmpleado) as nElementos FROM registro_patronal as regp INNER JOIN servicio as serv ON FIND_IN_SET(serv.idServicio, regp.ServiciosAsignados) > 0 INNER JOIN empleado as emp ON serv.idServicio = emp.idServicio WHERE regp.nEstatus = 1 GROUP BY regp.ID";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -65,10 +65,9 @@ exports.altaRegistroPatronal = async (req, res, next) => {
     const sZonaCiudad = req.body.sZonaCiudad;
     const nSalarioMinimoZPR = req.body.nSalarioMinimoZPR;
     const nPrimaRiesgo = req.body.nPrimaRiesgo;
-    const nElementos = req.body.nElementos;
 
 
-    sql = "INSERT INTO registro_patronal (ID,nRegistroPatronal,dFechaAlta,sEstado,sZonaCiudad,nSalarioMinimoZRP,PrimaDeRiesgo, nElementos, nEstatus) VALUES(null,'" + nRegistroPatronal + "','" + dfechaAlta + "','" + sEstado + "','" + sZonaCiudad + "'," + nSalarioMinimoZPR + "," + nPrimaRiesgo + "," + nElementos + ",1)";
+    sql = "INSERT INTO registro_patronal (ID,nRegistroPatronal,dFechaAlta,sEstado,sZonaCiudad,nSalarioMinimoZRP,PrimaDeRiesgo, nEstatus) VALUES(null,'" + nRegistroPatronal + "','" + dfechaAlta + "','" + sEstado + "','" + sZonaCiudad + "'," + nSalarioMinimoZPR + "," + nPrimaRiesgo + ",1)";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -138,7 +137,7 @@ exports.getRegistroPatronalxId = async (req, res, next) => {
 
     const nRegistroPatronal = req.body.nRegistroPatronal;
 
-    sql = "select ID as nID, nRegistroPatronal, date_format(dFechaAlta,'%Y-%m-%d') as dFechaAlta, sEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos from registro_patronal WHERE nRegistroPatronal  = '" + nRegistroPatronal + "'";
+    sql = "select ID as nID, nRegistroPatronal, date_format(dFechaAlta,'%Y-%m-%d') as dFechaAlta, sEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo from registro_patronal WHERE nRegistroPatronal  = '" + nRegistroPatronal + "'";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -160,7 +159,7 @@ exports.getRegistroPatronalxIdBaja = async (req, res, next) => {
 
     const nRegistroPatronal = req.body.nRegistroPatronal;
 
-    sql = "select ID as nID, nRegistroPatronal, date_format(dFechaBaja,'%Y-%m-%d') as dFechaBaja, sEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos,sMotivoBaja from registro_patronal WHERE nRegistroPatronal  = '" + nRegistroPatronal + "'";
+    sql = "select ID as nID, nRegistroPatronal, date_format(dFechaBaja,'%Y-%m-%d') as dFechaBaja, sEstado, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, sMotivoBaja from registro_patronal WHERE nRegistroPatronal  = '" + nRegistroPatronal + "'";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -187,9 +186,8 @@ exports.editarRegistroPatronal = async (req, res, next) => {
     const sZonaCiudad = req.body.sZonaCiudad;
     const nSalarioMinimoZRP = req.body.nSalarioMinimoZRP;
     const PrimaDeRiesgo = req.body.PrimaDeRiesgo;
-    const nElementos = req.body.nElementos;
 
-    sql = "UPDATE registro_patronal SET nRegistroPatronal = '" + nRegistroPatronal + "',dFechaAlta = '"+dFechaAlta+"' ,sEstado = '"+selectEstado+"' ,sZonaCiudad = '" + sZonaCiudad + "', nSalarioMinimoZRP = " + nSalarioMinimoZRP + ", PrimaDeRiesgo = " + PrimaDeRiesgo + ", nElementos = " + nElementos + " WHERE ID = '" + nID + "' ";
+    sql = "UPDATE registro_patronal SET nRegistroPatronal = '" + nRegistroPatronal + "',dFechaAlta = '"+dFechaAlta+"' ,sEstado = '"+selectEstado+"' ,sZonaCiudad = '" + sZonaCiudad + "', nSalarioMinimoZRP = " + nSalarioMinimoZRP + ", PrimaDeRiesgo = " + PrimaDeRiesgo + " WHERE ID = '" + nID + "' ";
 
     try {
         conn.conexion().query(sql, (error, results) => {
