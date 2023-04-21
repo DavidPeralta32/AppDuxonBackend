@@ -619,6 +619,7 @@ exports.getEmpleados = async (req, res, next) => {
         console.log(error)
     }
 }
+
 exports.getEmpleadosBaja = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     let servicios = req.body.servicios;

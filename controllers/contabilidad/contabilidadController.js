@@ -19,7 +19,7 @@ close = conexion.cerrarConexion
 exports.getRegistroPatronal = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    sql = "SELECT regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaAlta,'%d-%m-%Y') as dFechaAlta, regp.sEstado, regp.sZonaCiudad,regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, COUNT(emp.idEmpleado) as nElementos FROM registro_patronal as regp INNER JOIN servicio as serv ON FIND_IN_SET(serv.idServicio, regp.ServiciosAsignados) > 0 INNER JOIN empleado as emp ON serv.idServicio = emp.idServicio WHERE regp.nEstatus = 1 GROUP BY regp.ID";
+    sql = "SELECT regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaAlta,'%d-%m-%Y') as dFechaAlta, regp.sEstado, regp.sZonaCiudad,regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, COUNT(emp.idEmpleado) as nElementos FROM registro_patronal as regp LEFT JOIN servicio as serv ON FIND_IN_SET(serv.idServicio, regp.ServiciosAsignados) LEFT JOIN empleado as emp ON serv.idServicio = emp.idServicio WHERE regp.nEstatus = 1 GROUP BY regp.ID";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -39,7 +39,7 @@ exports.getRegistroPatronal = async (req, res, next) => {
 exports.getRegistroPatronalBaja = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    sql = `select ID as nID, nRegistroPatronal, date_format(dFechaBaja,"%d-%m-%Y") as dFechaBaja, sEstado as sEstadoBaja, sZonaCiudad,nSalarioMinimoZRP, PrimaDeRiesgo, nElementos, sMotivoBaja from registro_patronal WHERE nEstatus = 2`;
+    sql = `select regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaBaja,"%d-%m-%Y") as dFechaBaja, regp.sEstado as sEstadoBaja, regp.sZonaCiudad, regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, regp.sMotivoBaja, COUNT(emp.idEmpleado) as nElementos from registro_patronal as regp left JOIN servicio as serv ON FIND_IN_SET(serv.idServicio, regp.ServiciosAsignados) > 0 left JOIN empleado as emp ON serv.idServicio = emp.idServicio WHERE regp.nEstatus = 2 GROUP BY regp.ID`;
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -187,7 +187,7 @@ exports.editarRegistroPatronal = async (req, res, next) => {
     const nSalarioMinimoZRP = req.body.nSalarioMinimoZRP;
     const PrimaDeRiesgo = req.body.PrimaDeRiesgo;
 
-    sql = "UPDATE registro_patronal SET nRegistroPatronal = '" + nRegistroPatronal + "',dFechaAlta = '"+dFechaAlta+"' ,sEstado = '"+selectEstado+"' ,sZonaCiudad = '" + sZonaCiudad + "', nSalarioMinimoZRP = " + nSalarioMinimoZRP + ", PrimaDeRiesgo = " + PrimaDeRiesgo + " WHERE ID = '" + nID + "' ";
+    sql = "UPDATE registro_patronal SET nRegistroPatronal = '" + nRegistroPatronal + "',dFechaAlta = '" + dFechaAlta + "' ,sEstado = '" + selectEstado + "' ,sZonaCiudad = '" + sZonaCiudad + "', nSalarioMinimoZRP = " + nSalarioMinimoZRP + ", PrimaDeRiesgo = " + PrimaDeRiesgo + " WHERE ID = '" + nID + "' ";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -327,5 +327,27 @@ exports.serviciosxId = async (req, res, next) => {
     }
 }
 
+
+exports.actualizarUrlTarjetaLAboral = async (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+
+    var nRegistroPatronal = req.body.nRegistroPatronal;
+    var url = req.body.url;
+
+    sql = "UPDATE registro_patronal SET sUrlTarjetaLaboral = '" + url + "' WHERE nRegistroPatronal  =" + nRegistroPatronal + ""
+    //sql = "select count(*) as 'total' from Usuario where email='" + usuario + "' and password='" + password + "'";
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                res.json(error);
+            } else {
+                res.json(results);
+            }
+        });
+
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 

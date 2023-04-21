@@ -15,6 +15,7 @@ router.post('/getServicios', contabilidadController.getServicios);
 router.post('/asignarServicios', contabilidadController.asignarServicios);
 router.post('/serviciosxId', contabilidadController.serviciosxId);
 router.post('/getServiciosPrincipal', contabilidadController.getServiciosPrincipal);
+router.post('/actualizarUrlTarjetaLAboral', contabilidadController.actualizarUrlTarjetaLAboral);
 
 
 
