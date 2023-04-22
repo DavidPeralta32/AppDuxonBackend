@@ -1,5 +1,9 @@
 const e = require('express');
 const express = require('express');
+const upload = require('express-uploadfiles')();
+
+
+
 const db = require("../../models/general/generalModel");
 const conexion = require("../../utils/conexion");
 const fs = require('fs');
@@ -9,6 +13,7 @@ const { isNull } = require('util');
 // Importa easy-template-x y fs
 //const TemplateHandler = require('easy-template-x');
 //const createReport = require('docx-templates');
+
 
 
 
@@ -327,15 +332,13 @@ exports.serviciosxId = async (req, res, next) => {
     }
 }
 
-
-exports.actualizarUrlTarjetaLAboral = async (req, res, next) => {
+exports.traerRutaTarjetaLaboral = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    var nRegistroPatronal = req.body.nRegistroPatronal;
-    var url = req.body.url;
+    const nRegistroPatronal = req.body.nRegistroPatronal;
 
-    sql = "UPDATE registro_patronal SET sUrlTarjetaLaboral = '" + url + "' WHERE nRegistroPatronal  =" + nRegistroPatronal + ""
-    //sql = "select count(*) as 'total' from Usuario where email='" + usuario + "' and password='" + password + "'";
+    sql = "select sUrlTarjetaLaboral  from registro_patronal where nRegistroPatronal  = '" + nRegistroPatronal + "'";
+
     try {
         conn.conexion().query(sql, (error, results) => {
             if (error) {
@@ -343,6 +346,7 @@ exports.actualizarUrlTarjetaLAboral = async (req, res, next) => {
             } else {
                 res.json(results);
             }
+
         });
 
     } catch (error) {
@@ -350,4 +354,77 @@ exports.actualizarUrlTarjetaLAboral = async (req, res, next) => {
     }
 }
 
+exports.actualizarUrlTarjetaLaboral = async (req, res, next) => {
+    let sampleFile;
+    let uploadPath;
+    let estatusArchivo;
+    const nRegistroPatronal = req.query.nRegistroPatronal;
+
+    //Verifica que se seleccionara un archivo
+    if (!req.files || Object.keys(req.files).length === 0) {
+        const respuesta = {status: "Error", mensaje: "No se selecciono ningun archivo."};
+        return res.json(respuesta);
+    }
+
+    sampleFile = req.files.sampleFile;
+
+    // Verifica que el archivo sea PDF
+    if (sampleFile.mimetype !== 'application/pdf') {
+        const respuesta = { status: "Error", mensaje: "Solo se permiten archivos PDF."};
+        return res.json(respuesta);
+    }
+
+    //uploadPath = path.join(__dirname, 'uploads', sampleFile.name);
+    uploadPath = path.join(__dirname, 'uploads', nRegistroPatronal);
+
+    sampleFile.mv(uploadPath, function (err, resp) {
+        if (err) {
+            return res.status(500).send(err);
+        } else {
+            estatusArchivo = true;
+        }
+
+        if (estatusArchivo) {
+            sql = "UPDATE registro_patronal SET sUrlTarjetaLaboral ='" + nRegistroPatronal + "' WHERE nRegistroPatronal  ='" + nRegistroPatronal + "'";
+            try {
+                conn.conexion().query(sql, (error, results) => {
+                    if (error) {
+                        res.json(error);
+                    } else {
+                        console.log(results)
+                        res.json(results)
+                    }
+                });
+            } catch (error) {
+                console.log(error)
+
+            }
+        }
+
+    });
+
+}
+
+
+exports.descargarArchivo = (req, res) => {
+
+    const sRutaArchivo = req.query.sRutaArchivo;
+    const archivo = path.join(__dirname, 'uploads', sRutaArchivo);
+
+    console.log(archivo);
+    //const archivo = '/ruta/al/archivo.txt';
+
+    // Verificar si el archivo existe
+    if (!fs.existsSync(archivo)) {
+        return res.status(404).send('El archivo no existe');
+    }
+
+    // Descargar el archivo
+    res.download(archivo, 'TarjetaLaboral', (error) => {
+        if (error) {
+            console.error(error);
+            res.status(500).send('Ocurrió un error al descargar el archivo');
+        }
+    });
+};
 

@@ -1,0 +1,6 @@
+(select regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaAlta,'%d-%m-%Y') as dFechaAlta, regp.sEstado, regp.sZonaCiudad,regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, regp.nEstatus from registro_patronal as regp  WHERE nEstatus = 1)
+UNION
+(SELECT COUNT(emp.idServicio) FROM servicio as serv
+ INNER JOIN empleado as emp
+ ON serv.idServicio = emp.idServicio
+ WHERE FIND_IN_SET(serv.idServicio, (SELECT ServiciosAsignados FROM registro_patronal)) > 0) 

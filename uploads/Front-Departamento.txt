@@ -1,0 +1,13 @@
+ <form @submit.prevent="añadirUrlTarjetaLaboral" ref='uploadForm' id='uploadForm' action='http://localhost:7005/upload' method='post' encType="multipart/form-data">    
+                    <v-file-input type="file" name="sampleFile" placeholder="Subir Archivo" label="Subir Archivo"
+                        density="compact" variant="outlined" prepend-icon="mdi-archive" />
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="green darken-1" text @click="dialogAñadirTarjetaLaboral = false">
+                        Cancelar
+                    </v-btn>
+                    <v-btn color="green darken-1" text type="submit">
+                        Agregar URL
+                    </v-btn>
+                </v-card-actions>
+            </form>
