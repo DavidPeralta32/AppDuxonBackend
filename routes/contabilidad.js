@@ -2,6 +2,8 @@ const express = require('express');
 const router= express.Router()
 const contabilidadController= require('../controllers/contabilidad/contabilidadController');
 
+const altaImssController= require('../controllers/contabilidad/altaImssController');
+
 router.post('/getRegistroPatronal', contabilidadController.getRegistroPatronal);
 router.post('/getRegistroPatronalBaja', contabilidadController.getRegistroPatronalBaja);
 router.post('/altaRegistroPatronal', contabilidadController.altaRegistroPatronal);
@@ -21,6 +23,11 @@ router.post('/traerRutaTarjetaLaboral', contabilidadController.traerRutaTarjetaL
 router.post('/getRPatronalesAServicioAdmin', contabilidadController.getRPatronalesAServicioAdmin);
 router.post('/asignarRPatronalAServicioAdmin', contabilidadController.asignarRPatronalAServicioAdmin);
 router.post('/serviciosxIdAdmin', contabilidadController.serviciosxIdAdmin);
+
+
+//AltasImss
+router.post('/getInfoEmpleadosAltaImss', altaImssController.getInfoEmpleadosAltaImss);
+
 
 
 
