@@ -24,7 +24,7 @@ close = conexion.cerrarConexion
 exports.getRegistroPatronal = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    sql = "SELECT regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaAlta,'%d-%m-%Y') as dFechaAlta, regp.sEstado, regp.sZonaCiudad,regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, COUNT(emp.idEmpleado) as nElementos FROM registro_patronal as regp LEFT JOIN servicio as serv ON FIND_IN_SET(serv.idServicio, regp.ServiciosAsignados) LEFT JOIN empleado as emp ON serv.idServicio = emp.idServicio WHERE regp.nEstatus = 1 GROUP BY regp.ID";
+    sql = "SELECT regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaAlta,'%d-%m-%Y') as dFechaAlta, regp.sEstado, regp.sZonaCiudad,regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, COUNT(emp.idEmpleado) as nElementos FROM registro_patronal as regp LEFT JOIN Servicio as serv ON FIND_IN_SET(serv.idServicio, regp.ServiciosAsignados) LEFT JOIN Empleado as emp ON serv.idServicio = emp.idServicio WHERE regp.nEstatus = 1  GROUP BY regp.ID";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -44,7 +44,7 @@ exports.getRegistroPatronal = async (req, res, next) => {
 exports.getRegistroPatronalBaja = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    sql = `select regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaBaja,"%d-%m-%Y") as dFechaBaja, regp.sEstado as sEstadoBaja, regp.sZonaCiudad, regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, regp.sMotivoBaja, COUNT(emp.idEmpleado) as nElementos from registro_patronal as regp left JOIN servicio as serv ON FIND_IN_SET(serv.idServicio, regp.ServiciosAsignados) > 0 left JOIN empleado as emp ON serv.idServicio = emp.idServicio WHERE regp.nEstatus = 2 GROUP BY regp.ID`;
+    sql = `select regp.ID as nID, regp.nRegistroPatronal, date_format(regp.dFechaBaja,"%d-%m-%Y") as dFechaBaja, regp.sEstado as sEstadoBaja, regp.sZonaCiudad, regp.nSalarioMinimoZRP, regp.PrimaDeRiesgo, regp.sMotivoBaja, COUNT(emp.idEmpleado) as nElementos from registro_patronal as regp left JOIN Servicio as serv ON FIND_IN_SET(serv.idServicio, regp.ServiciosAsignados) > 0 left JOIN Empleado as emp ON serv.idServicio = emp.idServicio WHERE regp.nEstatus = 2 GROUP BY regp.ID`;
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -98,7 +98,7 @@ exports.bajaRegistroPatronal = async (req, res, next) => {
     const dFechaBaja = req.body.dFechaBaja;
     const sMotivoBaja = req.body.sMotivoBaja;
 
-    sql = "UPDATE registro_patronal SET nEstatus = 2, dFechaBaja = '" + dFechaBaja + "', sMotivoBaja = '" + sMotivoBaja + "' WHERE nRegistroPatronal = '" + nRegistroPatronal + "' ";
+    sql = "UPDATE registro_patronal SET nEstatus = 2, ServiciosAsignados = '',dFechaBaja = '" + dFechaBaja + "', sMotivoBaja = '" + sMotivoBaja + "' WHERE nRegistroPatronal = '" + nRegistroPatronal + "' ";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -233,8 +233,9 @@ exports.validarNRegistroPatronal = async (req, res, next) => {
 exports.getServicios = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
     const selectServicios = req.body.selectServicios;
+    const nID = req.body.nID;
 
-    sql = "select idServicio, nombre, contrato,estado as estadoServicio from servicio WHERE idServicio IN(" + selectServicios + ")";
+    sql = "select idServicio, nombre, contrato,estado as estadoServicio from Servicio WHERE idServicio IN(" + selectServicios + ") or  FIND_IN_SET("+nID+",idRPatronalAsignado) > 0";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -254,7 +255,7 @@ exports.getServicios = async (req, res, next) => {
 exports.getServiciosPrincipal = async (req, res, next) => {
     res.header('Access-Control-Allow-Origin', '*');
 
-    sql = "select idServicio, nombre from servicio";
+    sql = "select idServicio, nombre from Servicio where ISNULL(idPadre) and idServicio != 1";
 
     try {
         conn.conexion().query(sql, (error, results) => {
@@ -277,13 +278,15 @@ exports.asignarServicios = async (req, res, next) => {
     let nRegistroPatronal = req.body.nRegistroPatronal;
     let serviciosAsignados = req.body.serviciosAsignados;
 
+
+
     sql = "UPDATE registro_patronal SET ServiciosAsignados ='" + serviciosAsignados + "' WHERE nRegistroPatronal  ='" + nRegistroPatronal + "'";
+
     try {
         conn.conexion().query(sql, (error, results) => {
             if (error) {
                 res.json(error);
             } else {
-                console.log(results)
                 res.json(results)
             }
         });
@@ -362,7 +365,7 @@ exports.actualizarUrlTarjetaLaboral = async (req, res, next) => {
 
     //Verifica que se seleccionara un archivo
     if (!req.files || Object.keys(req.files).length === 0) {
-        const respuesta = {status: "Error", mensaje: "No se selecciono ningun archivo."};
+        const respuesta = { status: "Error", mensaje: "No se selecciono ningun archivo." };
         return res.json(respuesta);
     }
 
@@ -370,12 +373,12 @@ exports.actualizarUrlTarjetaLaboral = async (req, res, next) => {
 
     // Verifica que el archivo sea PDF
     if (sampleFile.mimetype !== 'application/pdf') {
-        const respuesta = { status: "Error", mensaje: "Solo se permiten archivos PDF."};
+        const respuesta = { status: "Error", mensaje: "Solo se permiten archivos PDF." };
         return res.json(respuesta);
     }
 
     //uploadPath = path.join(__dirname, 'uploads', sampleFile.name);
-    uploadPath = path.join(__dirname, 'uploads', nRegistroPatronal);
+    uploadPath = path.join(__dirname, 'uploads', nRegistroPatronal + ".pdf");
 
     sampleFile.mv(uploadPath, function (err, resp) {
         if (err) {
@@ -385,14 +388,15 @@ exports.actualizarUrlTarjetaLaboral = async (req, res, next) => {
         }
 
         if (estatusArchivo) {
-            sql = "UPDATE registro_patronal SET sUrlTarjetaLaboral ='" + nRegistroPatronal + "' WHERE nRegistroPatronal  ='" + nRegistroPatronal + "'";
+            sql = "UPDATE registro_patronal SET sUrlTarjetaLaboral = '" + nRegistroPatronal + "' WHERE nRegistroPatronal  ='" + nRegistroPatronal + "'";
             try {
                 conn.conexion().query(sql, (error, results) => {
                     if (error) {
                         res.json(error);
                     } else {
                         console.log(results)
-                        res.json(results)
+                        const respuestaUpdate = { status: "OK", mensaje: "Agregado correctamente" };
+                        res.json(respuestaUpdate)
                     }
                 });
             } catch (error) {
@@ -409,7 +413,7 @@ exports.actualizarUrlTarjetaLaboral = async (req, res, next) => {
 exports.descargarArchivo = (req, res) => {
 
     const sRutaArchivo = req.query.sRutaArchivo;
-    const archivo = path.join(__dirname, 'uploads', sRutaArchivo);
+    const archivo = path.join(__dirname, 'uploads', sRutaArchivo + ".pdf");
 
     console.log(archivo);
     //const archivo = '/ruta/al/archivo.txt';
@@ -427,4 +431,72 @@ exports.descargarArchivo = (req, res) => {
         }
     });
 };
+
+
+exports.getRPatronalesAServicioAdmin = async (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+
+    sql = "SELECT idRPatronalAsignado from Servicio where idServicio = 1";
+
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                res.json(error);
+            } else {
+                res.json(results);
+            }
+
+        });
+
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+
+exports.asignarRPatronalAServicioAdmin = async (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+
+    let serviciosAsignados = req.body.serviciosAsignados;
+    const nRegistrosPatronales = req.body.serviciosAsignados;
+
+
+    sql = "UPDATE Servicio SET idRPatronalAsignado ='" + serviciosAsignados + "' WHERE idServicio   = 1";
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                console.log(error);
+                res.json(error);
+            } else {
+                res.json(results)
+            }
+        });
+
+    } catch (error) {
+        console.log(error)
+
+    }
+}
+
+
+
+exports.serviciosxIdAdmin = async (req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+
+    var nID = req.body.nID;
+
+    sql = "SELECT idServicio from Servicio WHERE FIND_IN_SET("+nID+",idRPatronalAsignado) > 0";
+
+    try {
+        conn.conexion().query(sql, (error, results) => {
+            if (error) {
+                res.json(error);
+            } else {
+                res.json(results)
+            }
+        });
+    } catch (err) {
+        console.log(error)
+    }
+}
 

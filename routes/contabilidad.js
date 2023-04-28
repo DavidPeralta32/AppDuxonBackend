@@ -18,6 +18,9 @@ router.post('/getServiciosPrincipal', contabilidadController.getServiciosPrincip
 router.post('/actualizarUrlTarjetaLaboral', contabilidadController.actualizarUrlTarjetaLaboral);
 router.get('/descargarArchivo', contabilidadController.descargarArchivo);
 router.post('/traerRutaTarjetaLaboral', contabilidadController.traerRutaTarjetaLaboral);
+router.post('/getRPatronalesAServicioAdmin', contabilidadController.getRPatronalesAServicioAdmin);
+router.post('/asignarRPatronalAServicioAdmin', contabilidadController.asignarRPatronalAServicioAdmin);
+router.post('/serviciosxIdAdmin', contabilidadController.serviciosxIdAdmin);
 
 
 
